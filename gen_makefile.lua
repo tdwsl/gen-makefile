@@ -30,7 +30,7 @@ end
 
 function split_string(str, d)
 	local split_table = {}
-	for s in string.gmatch(str, "[^"..d.."]+") do
+	for s in string.gmatch(str, "([^"..d.."]+)") do
 		table.insert(split_table, s)
 	end
 	return split_table
@@ -92,9 +92,7 @@ function get_objects(keepext)
 	local dirstr = io.popen("ls src"):read("*a")
 	local objects = {}
 
-	for d in string.gmatch(dirstr, "([^ ]+)") do
-		table.insert(objects, d:sub(1, #d-1))
-	end
+	objects = split_string(dirstr, "\n")
 
 	for i, obj in ipairs(objects) do
 		if obj == "." or obj == ".." then
@@ -161,7 +159,7 @@ end
 io.write("\n\t$(CC) obj/* -Iinclude -o $(OUTPUT)" .. argstr .. "\n\n")
 
 for i, o in ipairs(objects) do
-	io.write("obj/" .. o .. ".o:\n")
+	io.write("obj/" .. o .. ".o: src/" .. objects_ext[i] .. "\n")
 	io.write("\t$(CC) -c src/" .. objects_ext[i] .. " -Iinclude\n")
 end
 

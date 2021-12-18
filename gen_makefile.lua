@@ -114,13 +114,43 @@ function get_objects(keepext)
 		end
 
 		if di ~= -1 then
-			objects[j] = obj:sub(1, di-1)
+			objects[j] = string.sub(obj, 1, di-1)
 		else
 			table.remove(objects, j)
 		end
 	end
 
 	return objects
+end
+
+function get_deps(filename, objects)
+	local objname = string.gmatch(filename, "src/(%w+).+")()
+	local deps = ""
+	local f = io.open(filename, "r")
+	io.input(f)
+
+	while true do
+		local line = io.read("*l")
+		if line == nil then
+			break
+		end
+		if string.sub(line, 1, 10) ~= "#include \"" then
+			goto continue
+		end
+
+		local header = string.gmatch(line, "#include \"(%S+)\"")()
+		local obj = string.gmatch(header, "(%w+).+")()
+		for i, o in ipairs(objects) do
+			if obj == o and obj ~= objname then
+				deps = deps.." obj/"..obj..".o"
+			end
+		end
+
+		::continue::
+	end
+
+	io.close(f)
+	return deps
 end
 
 local argstr = get_argstr()
@@ -159,11 +189,14 @@ end
 io.write("\n\t$(CC) obj/* -Iinclude -o $(OUTPUT)" .. argstr .. "\n\n")
 
 for i, o in ipairs(objects) do
-	io.write("obj/" .. o .. ".o: src/" .. objects_ext[i] .. "\n")
-	io.write("\t$(CC) -c src/" .. objects_ext[i] .. " -Iinclude\n")
+	local deps = get_deps("src/"..objects_ext[i], objects)
+	io.write("obj/" .. o .. ".o: src/" .. objects_ext[i] .. deps)
+	io.write("\n\t$(CC) -c src/" .. objects_ext[i] .. " -Iinclude\n")
 end
 
 io.write("\nclean:\n")
 io.write("\trm obj/* $(OUTPUT)\n")
 
 io.close(makefile)
+
+print("generated makefile")

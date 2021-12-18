@@ -191,7 +191,8 @@ io.write("\n\t$(CC) obj/* -Iinclude -o $(OUTPUT)" .. argstr .. "\n\n")
 for i, o in ipairs(objects) do
 	local deps = get_deps("src/"..objects_ext[i], objects)
 	io.write("obj/" .. o .. ".o: src/" .. objects_ext[i] .. deps)
-	io.write("\n\t$(CC) -c src/" .. objects_ext[i] .. " -Iinclude\n")
+	io.write("\n\t$(CC) -c src/" .. objects_ext[i] .. " -Iinclude")
+	io.write(" -o obj/" .. o .. ".o\n")
 end
 
 io.write("\nclean:\n")

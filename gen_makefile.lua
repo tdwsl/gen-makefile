@@ -141,8 +141,8 @@ function get_deps(filename, objects)
 		local header = string.gmatch(line, "#include \"(%S+)\"")()
 		local obj = string.gmatch(header, "(%w+).+")()
 		for i, o in ipairs(objects) do
-			if obj == o and obj ~= objname then
-				deps = deps.." obj/"..obj..".o"
+			if obj == o --[[and obj ~= objname]] then
+				deps = deps..--[[" obj/"..obj..".o"..]]" include/"..header
 			end
 		end
 
